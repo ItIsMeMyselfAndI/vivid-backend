@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 
@@ -10,9 +11,11 @@ class Visit(BaseModel):
 class CreateVisit(Visit):
     page: str
     user_id: str
+    opened_at: datetime
 
 
 class UpdateVisit(Visit):
     page: Optional[str] = None
     user_id: Optional[str] = None
-    hours_spent: Optional[float] = None
+    opened_at: Optional[datetime] = None
+    closed_at: Optional[datetime] = None
