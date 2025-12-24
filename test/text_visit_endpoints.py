@@ -2,44 +2,39 @@ from datetime import datetime
 import unittest
 import requests
 
-from schema.simulation import CreateSimulation, SimulationStatus, SimulationType, UpdateSimulation
+from schema.visit import CreateVisit, UpdateVisit
 import os
 from dotenv import load_dotenv
 
 
-class TestSimulationEndpoints(unittest.TestCase):
+class TestVisitEndpoints(unittest.TestCase):
     def setUp(self):
         load_dotenv()
         api_url = os.environ.get("API_URL")
         if not api_url:
-            print("[Exit] PROJECT_URL doesn't exist")
+            print("[FAIL] PROJECT_URL doesn't exist")
             exit(0)
         self.api_url = api_url
 
-    def test_get_simulation_respond_data(self):
+    def test_get_visits_respond_data(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
-        simulation_type = SimulationType.STACK.value
+        count = 5
         response = requests.get(
-            f"{self.api_url}/get-simulation?user_id={user_id}&simulation_type={simulation_type}"
+            f"{self.api_url}/get-visits?user_id={user_id}&count={count}"
         ).json()
         try:
             print("[INFO]", response["data"])
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_create_simulation_respond_data(self):
-        data = CreateSimulation(
-            type=SimulationType.STACK,
+    def test_create_visit_respond_data(self):
+        data = CreateVisit(
+            page="/dashboard",
             user_id="864b42da-8553-41bb-a2dd-2b0699845136",
-            status=SimulationStatus.NOT_VISITED,
-            current_streak=1,
-            longest_streak=1,
-            total_visits=1,
-            last_visit_at=datetime.now(),
-            hours_spent=0
+            opened_at=datetime.now()
         )
         response = requests.post(
-            f"{self.api_url}/create-simulation",
+            f"{self.api_url}/create-visit",
             json=data.model_dump(mode="json")
         ).json()
         try:
@@ -47,16 +42,15 @@ class TestSimulationEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_update_simulation_respond_data(self):
+    def test_update_visit_respond_data(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
-        simulation_type = SimulationType.STACK.value
-        data = UpdateSimulation(
-            status=SimulationStatus.IN_PROGRESS,
-            total_visits=2,
-            last_visit_at=datetime.now(),
+        visit_id = 6
+        data = UpdateVisit(
+            page="/simulation",
+            closed_at=datetime.now(),
         )
         response = requests.put(
-            f"{self.api_url}/update-simulation?user_id={user_id}&simulation_type={simulation_type}",
+            f"{self.api_url}/update-visit?user_id={user_id}&visit_id={visit_id}",
             json=data.model_dump(mode="json", exclude_none=True)
         ).json()
         try:

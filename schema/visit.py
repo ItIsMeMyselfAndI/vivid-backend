@@ -16,6 +16,5 @@ class CreateVisit(Visit):
 
 class UpdateVisit(Visit):
     page: Optional[str] = None
-    user_id: Optional[str] = None
     opened_at: Optional[datetime] = None
     closed_at: Optional[datetime] = None
