@@ -31,7 +31,6 @@ class CreateSimulation(Simulation):
     longest_streak: int
     total_visits: int
     last_visit_at: datetime
-    completed_at: datetime
     hours_spent: float
 
 

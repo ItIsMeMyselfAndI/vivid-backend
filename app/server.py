@@ -2,7 +2,7 @@ from schema.simulation import (
     CreateSimulation, UpdateSimulation, SimulationType
 )
 from schema.visit import CreateVisit, UpdateVisit
-from client.main import supabase
+from client.index import supabase
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,7 +19,8 @@ if not project_url:
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[project_url],
+    # allow_origins=[project_url],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,7 +29,7 @@ app.add_middleware(
 
 # ----- simulation endpoints -----
 
-@app.post("/api/get-simulation")
+@app.get("/api/get-simulation")
 def get_simulation(user_id: str, simulation_type: SimulationType):
     response = supabase.table("simulation").select("*").match(
         {"user_id": user_id, "type": simulation_type.value}
@@ -58,9 +59,9 @@ def update_simulation(
 
 # ----- visit endpoints -----
 
-@app.post("/api/get-visits")
+@app.get("/api/get-visits")
 def get_visits(user_id: str, count: int):
-    response = supabase.table("simulation").select("*").match(
+    response = supabase.table("visit").select("*").match(
         {"user_id": user_id}
     ).order("created_at", desc=True).limit(count).execute()
     print(response)
