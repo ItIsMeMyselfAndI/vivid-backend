@@ -11,6 +11,15 @@ app = FastAPI()
 
 # ----- simulation endpoints -----
 
+@app.post("/api/get-simulation")
+def get_simulation(user_id: str, simulation_type: SimulationType):
+    response = supabase.table("simulation").select("*").match(
+        {"user_id": user_id, "type": simulation_type.value}
+    ).execute()
+    print(response)
+    return response
+
+
 @app.post("/api/create-simulation")
 def create_simulation(data:  CreateSimulation):
     response = supabase.table("simulation").insert(
@@ -31,6 +40,15 @@ def update_simulation(
 
 
 # ----- visit endpoints -----
+
+@app.post("/api/get-visits")
+def get_visits(user_id: str, count: int):
+    response = supabase.table("simulation").select("*").match(
+        {"user_id": user_id}
+    ).order("created_at", desc=True).limit(count).execute()
+    print(response)
+    return response
+
 
 @app.post("/api/create-visit")
 def create_visit(data:  CreateVisit):
