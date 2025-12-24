@@ -19,7 +19,6 @@ class SimulationType(Enum):
 
 
 class Simulation(BaseModel):
-
     class Config:
         use_enum_values = True
 
