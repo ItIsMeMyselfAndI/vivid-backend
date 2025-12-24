@@ -3,10 +3,27 @@ from schema.simulation import (
 )
 from schema.visit import CreateVisit, UpdateVisit
 from client.main import supabase
-from fastapi import FastAPI
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
+project_url = os.environ.get("PROJECT_URL")
+if not project_url:
+    print("[Exit] PROJECT_URL doesn't exist")
+    exit(0)
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[project_url],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # ----- simulation endpoints -----
