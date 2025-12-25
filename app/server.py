@@ -1,6 +1,7 @@
 from schema.simulation import (
     CreateSimulation, UpdateSimulation, SimulationType
 )
+from schema.settings import CreateSettings, UpdateSettings
 from schema.history import CreateHistory, UpdateHistory
 from client.index import supabase
 
@@ -60,7 +61,7 @@ def update_simulation(
 # ----- history endpoints -----
 
 @app.get("/api/get-histories")
-def get_historys(user_id: str, count: int):
+def get_histories(user_id: str, count: int):
     response = supabase.table("history").select("*").match(
         {"user_id": user_id}
     ).order("created_at", desc=True).limit(count).execute()
@@ -83,5 +84,34 @@ def update_history(
     response = supabase.table("history").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id, "id": history_id}).execute()
+    print(response)
+    return response
+
+
+# ----- settings endpoints -----
+
+@app.get("/api/get-settings")
+def get_settingss(user_id: str):
+    response = supabase.table("settings").select("*").match(
+        {"user_id": user_id}).execute()
+    print(response)
+    return response
+
+
+@app.post("/api/create-settings")
+def create_settings(data:  CreateSettings):
+    response = supabase.table("settings").insert(
+        data.model_dump(mode="json")).execute()
+    print(response)
+    return response
+
+
+@app.put("/api/update-settings")
+def update_settings(
+        user_id: str, data:  UpdateSettings
+):
+    response = supabase.table("settings").update(
+        data.model_dump(mode="json", exclude_none=True)
+    ).match({"user_id": user_id}).execute()
     print(response)
     return response
