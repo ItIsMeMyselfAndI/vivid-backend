@@ -1,7 +1,7 @@
 from schema.simulation import (
     CreateSimulation, UpdateSimulation, SimulationType
 )
-from schema.visit import CreateVisit, UpdateVisit
+from schema.history import CreateHistory, UpdateHistory
 from client.index import supabase
 
 from fastapi import FastAPI
@@ -57,31 +57,31 @@ def update_simulation(
     return response
 
 
-# ----- visit endpoints -----
+# ----- history endpoints -----
 
-@app.get("/api/get-visits")
-def get_visits(user_id: str, count: int):
-    response = supabase.table("visit").select("*").match(
+@app.get("/api/get-histories")
+def get_historys(user_id: str, count: int):
+    response = supabase.table("history").select("*").match(
         {"user_id": user_id}
     ).order("created_at", desc=True).limit(count).execute()
     print(response)
     return response
 
 
-@app.post("/api/create-visit")
-def create_visit(data:  CreateVisit):
-    response = supabase.table("visit").insert(
+@app.post("/api/create-history")
+def create_history(data:  CreateHistory):
+    response = supabase.table("history").insert(
         data.model_dump(mode="json")).execute()
     print(response)
     return response
 
 
-@app.put("/api/update-visit")
-def update_visit(
-        user_id: str, visit_id: int, data:  UpdateVisit
+@app.put("/api/update-history")
+def update_history(
+        user_id: str, history_id: int, data:  UpdateHistory
 ):
-    response = supabase.table("visit").update(
+    response = supabase.table("history").update(
         data.model_dump(mode="json", exclude_none=True)
-    ).match({"user_id": user_id, "id": visit_id}).execute()
+    ).match({"user_id": user_id, "id": history_id}).execute()
     print(response)
     return response
