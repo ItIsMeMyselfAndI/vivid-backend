@@ -3,18 +3,18 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class Visit(BaseModel):
+class History(BaseModel):
     class Config:
         use_enum_values = True
 
 
-class CreateVisit(Visit):
+class CreateHistory(History):
     page: str
     user_id: str
     opened_at: datetime
 
 
-class UpdateVisit(Visit):
+class UpdateHistory(History):
     page: Optional[str] = None
     opened_at: Optional[datetime] = None
     closed_at: Optional[datetime] = None

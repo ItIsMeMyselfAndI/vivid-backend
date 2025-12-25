@@ -2,12 +2,12 @@ from datetime import datetime
 import unittest
 import requests
 
-from schema.visit import CreateVisit, UpdateVisit
+from schema.history import CreateHistory, UpdateHistory
 import os
 from dotenv import load_dotenv
 
 
-class TestVisitEndpoints(unittest.TestCase):
+class TestHistoryEndpoints(unittest.TestCase):
     def setUp(self):
         load_dotenv()
         api_url = os.environ.get("API_URL")
@@ -16,25 +16,25 @@ class TestVisitEndpoints(unittest.TestCase):
             exit(0)
         self.api_url = api_url
 
-    def test_get_visits_respond_data(self):
+    def test_get_histories_respond_data(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         count = 5
         response = requests.get(
-            f"{self.api_url}/get-visits?user_id={user_id}&count={count}"
+            f"{self.api_url}/get-histories?user_id={user_id}&count={count}"
         ).json()
         try:
             print("[INFO]", response["data"])
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_create_visit_respond_data(self):
-        data = CreateVisit(
+    def test_create_history_respond_data(self):
+        data = CreateHistory(
             page="/dashboard",
             user_id="864b42da-8553-41bb-a2dd-2b0699845136",
             opened_at=datetime.now()
         )
         response = requests.post(
-            f"{self.api_url}/create-visit",
+            f"{self.api_url}/create-history",
             json=data.model_dump(mode="json")
         ).json()
         try:
@@ -42,15 +42,15 @@ class TestVisitEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_update_visit_respond_data(self):
+    def test_update_history_respond_data(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
-        visit_id = 6
-        data = UpdateVisit(
+        history_id = 6
+        data = UpdateHistory(
             page="/simulation",
             closed_at=datetime.now(),
         )
         response = requests.put(
-            f"{self.api_url}/update-visit?user_id={user_id}&visit_id={visit_id}",
+            f"{self.api_url}/update-history?user_id={user_id}&history_id={history_id}",
             json=data.model_dump(mode="json", exclude_none=True)
         ).json()
         try:
