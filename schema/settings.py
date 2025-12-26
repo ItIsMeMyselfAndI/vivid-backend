@@ -19,11 +19,10 @@ class CreateSettings(Settings):
     speed: float
     user_id: str
     created_at: datetime
+    updated_at: datetime
 
 
 class UpdateSettings(Settings):
     theme: Optional[SettingsTheme] = None
     speed: Optional[float] = None
-    user_id: Optional[str] = None
-    created_at: Optional[datetime] = None
     updated_at: datetime

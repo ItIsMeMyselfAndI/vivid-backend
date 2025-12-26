@@ -32,6 +32,8 @@ class CreateSimulation(Simulation):
     total_visits: int
     last_visit_at: datetime
     hours_spent: float
+    created_at: datetime
+    updated_at: datetime
 
 
 class UpdateSimulation(Simulation):
@@ -42,3 +44,4 @@ class UpdateSimulation(Simulation):
     last_visit_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     hours_spent: Optional[float] = None
+    updated_at: datetime

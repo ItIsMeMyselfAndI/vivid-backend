@@ -12,6 +12,8 @@ class CreateHistory(History):
     page: str
     user_id: str
     opened_at: datetime
+    created_at: datetime
+    updated_at: datetime
 
 
 class UpdateHistory(History):

@@ -31,7 +31,8 @@ class TestSettingsEndpoints(unittest.TestCase):
             user_id="864b42da-8553-41bb-a2dd-2b0699845136",
             theme=SettingsTheme.DARK,
             speed=1.0,
-            created_at=datetime.now()
+            created_at=datetime.now(),
+            updated_at=datetime.now()
         )
         response = requests.post(
             f"{self.api_url}/create-settings",

@@ -36,7 +36,9 @@ class TestSimulationEndpoints(unittest.TestCase):
             longest_streak=1,
             total_visits=1,
             last_visit_at=datetime.now(),
-            hours_spent=0
+            hours_spent=0,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         response = requests.post(
             f"{self.api_url}/create-simulation",
@@ -54,6 +56,7 @@ class TestSimulationEndpoints(unittest.TestCase):
             status=SimulationStatus.IN_PROGRESS,
             total_visits=2,
             last_visit_at=datetime.now(),
+            updated_at=datetime.now()
         )
         response = requests.put(
             f"{self.api_url}/update-simulation?user_id={user_id}&simulation_type={simulation_type}",

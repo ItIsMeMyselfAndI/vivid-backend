@@ -31,7 +31,9 @@ class TestHistoryEndpoints(unittest.TestCase):
         data = CreateHistory(
             page="/dashboard",
             user_id="864b42da-8553-41bb-a2dd-2b0699845136",
-            opened_at=datetime.now()
+            opened_at=datetime.now(),
+            created_at=datetime.now(),
+            updated_at=datetime.now()
         )
         response = requests.post(
             f"{self.api_url}/create-history",
