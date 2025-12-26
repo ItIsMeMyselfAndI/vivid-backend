@@ -10,6 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 
+from schema.stats import CreateStats, UpdateStats
+
 
 load_dotenv()
 project_url = os.environ.get("PROJECT_URL")
@@ -139,6 +141,38 @@ def update_settings(
         user_id: str, data:  UpdateSettings, req: Request
 ):
     response = supabase.table("settings").update(
+        data.model_dump(mode="json", exclude_none=True)
+    ).match({"user_id": user_id}).execute()
+    print(response)
+    print(req)
+    return response
+
+
+# ----- stats endpoints -----
+
+@app.get("/api/get-stats")
+def get_stats(user_id: str, req: Request):
+    response = supabase.table("stats").select("*").match(
+        {"user_id": user_id}).execute()
+    print(response)
+    print(req)
+    return response
+
+
+@app.post("/api/create-stats")
+def create_stats(data:  CreateStats, req: Request):
+    response = supabase.table("stats").insert(
+        data.model_dump(mode="json")).execute()
+    print(response)
+    print(req)
+    return response
+
+
+@app.put("/api/update-stats")
+def update_stats(
+        user_id: str, data:  UpdateStats, req: Request
+):
+    response = supabase.table("stats").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id}).execute()
     print(response)
