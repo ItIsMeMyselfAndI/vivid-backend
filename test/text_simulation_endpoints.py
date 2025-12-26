@@ -27,6 +27,16 @@ class TestSimulationEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
+    def test_get_all_simulations_respond_data(self):
+        user_id = "ee74dbf9-2dc2-491a-a2fa-141e229d74a7"
+        response = requests.get(
+            f"{self.api_url}/get-all-simulations?user_id={user_id}"
+        ).json()
+        try:
+            print("[INFO]", response["data"])
+        except Exception as e:
+            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+
     def test_create_simulation_respond_data(self):
         data = CreateSimulation(
             type=SimulationType.STACK,

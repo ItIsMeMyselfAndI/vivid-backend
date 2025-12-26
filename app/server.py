@@ -50,6 +50,16 @@ def get_simulation(user_id: str, simulation_type: SimulationType, req: Request):
     return response
 
 
+@app.get("/api/get-all-simulations")
+def get_all_simulations(user_id: str, req: Request):
+    response = supabase.table("simulation").select("*").match(
+        {"user_id": user_id}
+    ).execute()
+    print(response)
+    print(req)
+    return response
+
+
 @app.post("/api/create-simulation")
 def create_simulation(data:  CreateSimulation, req: Request):
     response = supabase.table("simulation").insert(
@@ -67,6 +77,7 @@ def update_simulation(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id, "type": simulation_type.value}).execute()
     print(response)
+    print(req)
     return response
 
 
@@ -78,6 +89,7 @@ def get_histories(user_id: str, count: int, req: Request):
         {"user_id": user_id}
     ).order("created_at", desc=True).limit(count).execute()
     print(response)
+    print(req)
     return response
 
 
@@ -86,6 +98,7 @@ def create_history(data:  CreateHistory, req: Request):
     response = supabase.table("history").insert(
         data.model_dump(mode="json")).execute()
     print(response)
+    print(req)
     return response
 
 
@@ -97,16 +110,18 @@ def update_history(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id, "id": history_id}).execute()
     print(response)
+    print(req)
     return response
 
 
 # ----- settings endpoints -----
 
 @app.get("/api/get-settings")
-def get_settingss(user_id: str, req: Request):
+def get_settings(user_id: str, req: Request):
     response = supabase.table("settings").select("*").match(
         {"user_id": user_id}).execute()
     print(response)
+    print(req)
     return response
 
 
@@ -115,6 +130,7 @@ def create_settings(data:  CreateSettings, req: Request):
     response = supabase.table("settings").insert(
         data.model_dump(mode="json")).execute()
     print(response)
+    print(req)
     return response
 
 
@@ -126,4 +142,5 @@ def update_settings(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id}).execute()
     print(response)
+    print(req)
     return response
