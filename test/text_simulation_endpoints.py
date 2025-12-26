@@ -42,11 +42,9 @@ class TestSimulationEndpoints(unittest.TestCase):
             type=SimulationType.STACK,
             user_id="864b42da-8553-41bb-a2dd-2b0699845136",
             status=SimulationStatus.NOT_VISITED,
-            current_streak=1,
-            longest_streak=1,
             total_visits=1,
             last_visit_at=datetime.now(),
-            hours_spent=0,
+            seconds_spent=0,
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )

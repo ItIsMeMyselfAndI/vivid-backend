@@ -27,21 +27,17 @@ class CreateSimulation(Simulation):
     type: SimulationType
     user_id: str
     status: SimulationStatus
-    current_streak: int
-    longest_streak: int
     total_visits: int
     last_visit_at: datetime
-    hours_spent: float
+    seconds_spent: float
     created_at: datetime
     updated_at: datetime
 
 
 class UpdateSimulation(Simulation):
     status: Optional[SimulationStatus] = None
-    current_streak: Optional[int] = None
-    longest_streak: Optional[int] = None
     total_visits: Optional[int] = None
     last_visit_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
-    hours_spent: Optional[float] = None
+    seconds_spent: Optional[float] = None
     updated_at: datetime
