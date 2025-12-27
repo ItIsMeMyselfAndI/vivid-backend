@@ -85,8 +85,18 @@ def update_simulation(
 
 # ----- history endpoints -----
 
-@app.get("/api/get-histories")
-def get_histories(user_id: str, count: int, req: Request):
+@app.get("/api/get-history")
+def get_history(user_id: str, history_id: int, req: Request):
+    response = supabase.table("history").select("*").match(
+            {"user_id": user_id, "id": history_id}
+    ).execute()
+    print(response)
+    print(req)
+    return response
+
+
+@app.get("/api/get-histories-from-bot")
+def get_histories_from_bot(user_id: str, count: int, req: Request):
     response = supabase.table("history").select("*").match(
         {"user_id": user_id}
     ).order("created_at", desc=True).limit(count).execute()

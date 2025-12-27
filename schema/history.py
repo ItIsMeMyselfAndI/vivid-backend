@@ -11,12 +11,12 @@ class History(BaseModel):
 class CreateHistory(History):
     page: str
     user_id: str
-    opened_at: datetime
+    seconds_spent: float
     created_at: datetime
     updated_at: datetime
 
 
 class UpdateHistory(History):
     page: Optional[str] = None
-    opened_at: Optional[datetime] = None
-    closed_at: Optional[datetime] = None
+    seconds_spent: Optional[float] = None
+    updated_at: datetime

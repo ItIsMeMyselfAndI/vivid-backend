@@ -16,11 +16,22 @@ class TestHistoryEndpoints(unittest.TestCase):
             exit(0)
         self.api_url = api_url
 
-    def test_get_histories_respond_data(self):
+    def test_get_history_respond_data(self):
+        user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
+        history_id = 20
+        response = requests.get(
+            f"{self.api_url}/get-settings?user_id={user_id}&history_id={history_id}"
+        ).json()
+        try:
+            print("[INFO]", response["data"])
+        except Exception as e:
+            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+
+    def test_get_histories_from_bot_respond_data(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         count = 5
         response = requests.get(
-            f"{self.api_url}/get-histories?user_id={user_id}&count={count}"
+            f"{self.api_url}/get-histories-from-bot?user_id={user_id}&count={count}"
         ).json()
         try:
             print("[INFO]", response["data"])
@@ -31,9 +42,9 @@ class TestHistoryEndpoints(unittest.TestCase):
         data = CreateHistory(
             page="/dashboard",
             user_id="864b42da-8553-41bb-a2dd-2b0699845136",
-            opened_at=datetime.now(),
-            created_at=datetime.now(),
-            updated_at=datetime.now()
+            seconds_spent=0,
+            updated_at=datetime.now(),
+            created_at=datetime.now()
         )
         response = requests.post(
             f"{self.api_url}/create-history",
@@ -49,7 +60,8 @@ class TestHistoryEndpoints(unittest.TestCase):
         history_id = 6
         data = UpdateHistory(
             page="/simulation",
-            closed_at=datetime.now(),
+            seconds_spent=4,
+            updated_at=datetime.now(),
         )
         response = requests.put(
             f"{self.api_url}/update-history?user_id={user_id}&history_id={history_id}",
