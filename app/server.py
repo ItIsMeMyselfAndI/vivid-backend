@@ -1,3 +1,4 @@
+from schema.profile import CreateProfile, UpdateProfile
 from schema.simulation import (
     CreateSimulation, UpdateSimulation, SimulationType
 )
@@ -185,6 +186,38 @@ def update_stats(
     response = supabase.table("stats").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id}).execute()
+    print(response)
+    print(req)
+    return response
+
+
+# ----- profile endpoints -----
+
+@app.get("/api/get-profile")
+def get_profile(user_id: str, req: Request):
+    response = supabase.table("profile").select("*").match(
+        {"id": user_id}).execute()
+    print(response)
+    print(req)
+    return response
+
+
+@app.post("/api/create-profile")
+def create_profile(data:  CreateProfile, req: Request):
+    response = supabase.from_("profile").insert(
+        data.model_dump(mode="json", exclude_none=True)).execute()
+    print(response)
+    print(req)
+    return response
+
+
+@app.put("/api/update-profile")
+def update_profile(
+        user_id: str, data:  UpdateProfile, req: Request
+):
+    response = supabase.table("profile").update(
+        data.model_dump(mode="json", exclude_none=True)
+    ).match({"id": user_id}).execute()
     print(response)
     print(req)
     return response
