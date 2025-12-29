@@ -16,7 +16,7 @@ class TestHistoryEndpoints(unittest.TestCase):
             exit(0)
         self.api_url = api_url
 
-    def test_get_history_respond_data(self):
+    def test_get_history_response(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         history_id = 20
         response = requests.get(
@@ -27,7 +27,7 @@ class TestHistoryEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_get_histories_from_bot_respond_data(self):
+    def test_get_histories_from_bot_response(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         count = 5
         response = requests.get(
@@ -38,7 +38,7 @@ class TestHistoryEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_create_history_respond_data(self):
+    def test_create_history_response(self):
         data = CreateHistory(
             page="/dashboard",
             user_id="864b42da-8553-41bb-a2dd-2b0699845136",
@@ -55,7 +55,7 @@ class TestHistoryEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_update_history_respond_data(self):
+    def test_update_history_response(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         history_id = 6
         data = UpdateHistory(

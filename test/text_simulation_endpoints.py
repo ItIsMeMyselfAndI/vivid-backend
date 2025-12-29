@@ -16,7 +16,7 @@ class TestSimulationEndpoints(unittest.TestCase):
             exit(0)
         self.api_url = api_url
 
-    def test_get_simulation_respond_data(self):
+    def test_get_simulation_response(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         simulation_type = SimulationType.STACK.value
         response = requests.get(
@@ -27,7 +27,7 @@ class TestSimulationEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_get_all_simulations_respond_data(self):
+    def test_get_all_simulations_response(self):
         user_id = "ee74dbf9-2dc2-491a-a2fa-141e229d74a7"
         response = requests.get(
             f"{self.api_url}/get-all-simulations?user_id={user_id}"
@@ -37,7 +37,7 @@ class TestSimulationEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_create_simulation_respond_data(self):
+    def test_create_simulation_response(self):
         data = CreateSimulation(
             type=SimulationType.STACK,
             user_id="864b42da-8553-41bb-a2dd-2b0699845136",
@@ -57,7 +57,7 @@ class TestSimulationEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_update_simulation_respond_data(self):
+    def test_update_simulation_response(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         simulation_type = SimulationType.STACK.value
         data = UpdateSimulation(

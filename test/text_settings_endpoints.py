@@ -16,7 +16,7 @@ class TestSettingsEndpoints(unittest.TestCase):
             exit(0)
         self.api_url = api_url
 
-    def test_get_settings_respond_data(self):
+    def test_get_settings_response(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         response = requests.get(
             f"{self.api_url}/get-settings?user_id={user_id}"
@@ -26,7 +26,7 @@ class TestSettingsEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_create_settings_respond_data(self):
+    def test_create_settings_response(self):
         data = CreateSettings(
             user_id="864b42da-8553-41bb-a2dd-2b0699845136",
             theme=SettingsTheme.DARK,
@@ -43,7 +43,7 @@ class TestSettingsEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_update_settings_respond_data(self):
+    def test_update_settings_response(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         data = UpdateSettings(
             theme=SettingsTheme.LIGHT,
