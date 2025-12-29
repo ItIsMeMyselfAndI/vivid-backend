@@ -16,7 +16,7 @@ class TestStatsEndpoints(unittest.TestCase):
             exit(0)
         self.api_url = api_url
 
-    def test_get_stats_respond_data(self):
+    def test_get_stats_response(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         response = requests.get(
             f"{self.api_url}/get-stats?user_id={user_id}"
@@ -26,7 +26,7 @@ class TestStatsEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_create_stats_respond_data(self):
+    def test_create_stats_response(self):
         data = CreateStats(
             user_id="864b42da-8553-41bb-a2dd-2b0699845136",
             current_streak=0,
@@ -44,7 +44,7 @@ class TestStatsEndpoints(unittest.TestCase):
         except Exception as e:
             self.fail(f"[FAIL] data doesn't exist on the response: {e}")
 
-    def test_update_stats_respond_data(self):
+    def test_update_stats_response(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         data = UpdateStats(
             current_streak=9,

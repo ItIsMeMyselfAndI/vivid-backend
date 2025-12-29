@@ -1,3 +1,4 @@
+from openai import OpenAI
 from schema.profile import CreateProfile, UpdateProfile
 from schema.simulation import (
     CreateSimulation, UpdateSimulation, SimulationType
@@ -15,9 +16,9 @@ from schema.stats import CreateStats, UpdateStats
 
 
 load_dotenv()
-project_url = os.environ.get("PROJECT_URL")
-print(project_url)
-if not project_url:
+PROJECT_URL = os.environ.get("PROJECT_URL")
+print(PROJECT_URL)
+if not PROJECT_URL:
     print("[Exit] PROJECT_URL doesn't exist")
     exit(0)
 
@@ -25,20 +26,22 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        project_url,
-        f"{project_url}/dashboard",
-        f"{project_url}/simulations",
-        f"{project_url}/simulations/stack",
-        f"{project_url}/simulations/queue",
-        f"{project_url}/simulations/binary-tree",
-        f"{project_url}/simulations/binary-search-tree",
-        f"{project_url}/simulations/recursion",
+        PROJECT_URL,
+        f"{PROJECT_URL}/dashboard",
+        f"{PROJECT_URL}/simulations",
+        f"{PROJECT_URL}/simulations/stack",
+        f"{PROJECT_URL}/simulations/queue",
+        f"{PROJECT_URL}/simulations/binary-tree",
+        f"{PROJECT_URL}/simulations/binary-search-tree",
+        f"{PROJECT_URL}/simulations/recursion",
         # "*",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+OPEN_ROUTER_URL = "https://openrouter.ai/api/v1"
+OPEN_ROUTER_API_KEY = os.environ.get("OPEN_ROUTER_API_KEY")
 
 
 # ----- simulation endpoints -----
@@ -89,7 +92,7 @@ def update_simulation(
 @app.get("/api/get-history")
 def get_history(user_id: str, history_id: int, req: Request):
     response = supabase.table("history").select("*").match(
-            {"user_id": user_id, "id": history_id}
+        {"user_id": user_id, "id": history_id}
     ).execute()
     print(response)
     print(req)
@@ -221,3 +224,50 @@ def update_profile(
     print(response)
     print(req)
     return response
+
+
+@app.post("/api/generate-profile-monthly-messages")
+def generate_profile_monthly_messages(req: Request):
+    prompt = """Generate a short message of the day.
+        This will be used in an app called
+        VIVID - visually intuitive & versatile interactive data strcuture.
+        this is an app made to simplify learning dsa and make it fun thru
+        the use of automated simulations based on user input. I want you
+        to generate motivating & encauraging words to support the user.
+            make it short sentence of 5-10 words.
+            generate 31 messages, separated by | no spaces before and after."
+            """
+    client = OpenAI(
+        base_url=OPEN_ROUTER_URL,
+        api_key=OPEN_ROUTER_API_KEY,
+    )
+    referer_url = ""
+    if PROJECT_URL:
+        referer_url = PROJECT_URL
+    completion = client.chat.completions.create(
+        extra_headers={
+            "HTTP-Referer": referer_url,
+            "X-Title": "Vivid"
+        },
+        extra_body={},
+        model="deepseek/deepseek-v3.1-terminus",
+        messages=[
+            {
+              "role": "user",
+              "content": prompt
+            }
+        ]
+    )
+    content = completion.choices[0].message.content
+    if (not content):
+        return
+    messages = content.split("|")
+    print(messages)
+    print(req)
+    return messages
+
+
+
+
+
+
