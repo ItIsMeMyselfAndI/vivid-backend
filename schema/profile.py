@@ -10,7 +10,7 @@ class Profile(BaseModel):
 
 class CreateProfile(Profile):
     id: str
-    username: str
+    username: Optional[str] = None
     email: EmailStr
     monthly_messages: Optional[List[str]] = []
     created_at: datetime

@@ -332,7 +332,17 @@ async def create_profile(data:  CreateProfile,
                          authorization: str = Header(None)):
     if not isUserLegit(authorization):
         return HTTPException(status_code=400, detail="Invalid JWT")
-    response = supabase.from_("profile").insert(
+    session = supabase.auth.get_user()
+    if not session:
+        return HTTPException(status_code=400, detail="User not found")
+    if not session.user.user_metadata["username"]:
+        return HTTPException(status_code=400, detail="User not found")
+    username = session.user.user_metadata.get("username")
+    if not username:
+        return HTTPException(status_code=400, detail="Username not found")
+    print(username)
+    data.username = username
+    response = supabase.table("profile").insert(
         data.model_dump(mode="json", exclude_none=True)).execute()
     print(response)
     return response
