@@ -1,3 +1,4 @@
+import json
 from openai import OpenAI
 from schema.profile import CreateProfile, UpdateProfile
 from schema.simulation import (
@@ -48,7 +49,7 @@ OPEN_ROUTER_API_KEY = os.environ.get("OPEN_ROUTER_API_KEY")
 # ----- simulation endpoints -----
 
 @app.get("/api/get-simulation")
-def get_simulation(user_id: str, simulation_type: SimulationType, req: Request):
+async def get_simulation(user_id: str, simulation_type: SimulationType, req: Request):
     response = supabase.table("simulation").select("*").match(
         {"user_id": user_id, "type": simulation_type.value}
     ).execute()
@@ -58,7 +59,7 @@ def get_simulation(user_id: str, simulation_type: SimulationType, req: Request):
 
 
 @app.get("/api/get-all-simulations")
-def get_all_simulations(user_id: str, req: Request):
+async def get_all_simulations(user_id: str, req: Request):
     response = supabase.table("simulation").select("*").match(
         {"user_id": user_id}
     ).execute()
@@ -68,7 +69,7 @@ def get_all_simulations(user_id: str, req: Request):
 
 
 @app.post("/api/create-simulation")
-def create_simulation(data:  CreateSimulation, req: Request):
+async def create_simulation(data:  CreateSimulation, req: Request):
     response = supabase.table("simulation").insert(
         data.model_dump(mode="json")).execute()
     print(response)
@@ -77,9 +78,28 @@ def create_simulation(data:  CreateSimulation, req: Request):
 
 
 @app.put("/api/update-simulation")
-def update_simulation(
+async def update_simulation(
         user_id: str, simulation_type: SimulationType, data:  UpdateSimulation, req: Request
 ):
+    response = supabase.table("simulation").update(
+        data.model_dump(mode="json", exclude_none=True)
+    ).match({"user_id": user_id, "type": simulation_type.value}).execute()
+    print(response)
+    print(req)
+    return response
+
+
+@app.post("/api/update-simulation-time-spent")
+async def update_simulation_on_exit(
+        user_id: str, simulation_type: SimulationType, req: Request
+):
+    req_body = await req.body()
+    blob = json.loads(req_body.decode())
+    data = UpdateSimulation(
+        seconds_spent=blob["seconds_spent"], updated_at=blob["updated_at"]
+    )
+    print("blob")
+    print(data)
     response = supabase.table("simulation").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id, "type": simulation_type.value}).execute()
@@ -91,7 +111,7 @@ def update_simulation(
 # ----- history endpoints -----
 
 @app.get("/api/get-history")
-def get_history(user_id: str, history_id: int, req: Request):
+async def get_history(user_id: str, history_id: int, req: Request):
     response = supabase.table("history").select("*").match(
         {"user_id": user_id, "id": history_id}
     ).execute()
@@ -101,7 +121,7 @@ def get_history(user_id: str, history_id: int, req: Request):
 
 
 @app.get("/api/get-histories-from-bot")
-def get_histories_from_bot(user_id: str, count: int, req: Request):
+async def get_histories_from_bot(user_id: str, count: int, req: Request):
     response = supabase.table("history").select("*").match(
         {"user_id": user_id}
     ).order("created_at", desc=True).limit(count).execute()
@@ -111,7 +131,7 @@ def get_histories_from_bot(user_id: str, count: int, req: Request):
 
 
 @app.post("/api/create-history")
-def create_history(data:  CreateHistory, req: Request):
+async def create_history(data:  CreateHistory, req: Request):
     response = supabase.table("history").insert(
         data.model_dump(mode="json")).execute()
     print(response)
@@ -120,7 +140,7 @@ def create_history(data:  CreateHistory, req: Request):
 
 
 @app.put("/api/update-history")
-def update_history(
+async def update_history(
         user_id: str, history_id: int, data:  UpdateHistory, req: Request
 ):
     response = supabase.table("history").update(
@@ -134,7 +154,7 @@ def update_history(
 # ----- settings endpoints -----
 
 @app.get("/api/get-settings")
-def get_settings(user_id: str, req: Request):
+async def get_settings(user_id: str, req: Request):
     response = supabase.table("settings").select("*").match(
         {"user_id": user_id}).execute()
     print(response)
@@ -143,7 +163,7 @@ def get_settings(user_id: str, req: Request):
 
 
 @app.post("/api/create-settings")
-def create_settings(data:  CreateSettings, req: Request):
+async def create_settings(data:  CreateSettings, req: Request):
     response = supabase.table("settings").insert(
         data.model_dump(mode="json")).execute()
     print(response)
@@ -152,7 +172,7 @@ def create_settings(data:  CreateSettings, req: Request):
 
 
 @app.put("/api/update-settings")
-def update_settings(
+async def update_settings(
         user_id: str, data:  UpdateSettings, req: Request
 ):
     response = supabase.table("settings").update(
@@ -166,7 +186,7 @@ def update_settings(
 # ----- stats endpoints -----
 
 @app.get("/api/get-stats")
-def get_stats(user_id: str, req: Request):
+async def get_stats(user_id: str, req: Request):
     response = supabase.table("stats").select("*").match(
         {"user_id": user_id}).execute()
     print(response)
@@ -175,7 +195,7 @@ def get_stats(user_id: str, req: Request):
 
 
 @app.post("/api/create-stats")
-def create_stats(data:  CreateStats, req: Request):
+async def create_stats(data:  CreateStats, req: Request):
     response = supabase.table("stats").insert(
         data.model_dump(mode="json")).execute()
     print(response)
@@ -184,9 +204,28 @@ def create_stats(data:  CreateStats, req: Request):
 
 
 @app.put("/api/update-stats")
-def update_stats(
+async def update_stats(
         user_id: str, data:  UpdateStats, req: Request
 ):
+    response = supabase.table("stats").update(
+        data.model_dump(mode="json", exclude_none=True)
+    ).match({"user_id": user_id}).execute()
+    print(response)
+    print(req)
+    return response
+
+
+@app.post("/api/update-stats-time-spent")
+async def update_stats_on_exit(
+        user_id: str, req: Request
+):
+    req_body = await req.body()
+    blob = json.loads(req_body.decode())
+    data = UpdateSimulation(
+        seconds_spent=blob["seconds_spent"], updated_at=blob["updated_at"]
+    )
+    print("blob")
+    print(data)
     response = supabase.table("stats").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id}).execute()
@@ -198,7 +237,7 @@ def update_stats(
 # ----- profile endpoints -----
 
 @app.get("/api/get-profile")
-def get_profile(user_id: str, req: Request):
+async def get_profile(user_id: str, req: Request):
     response = supabase.table("profile").select("*").match(
         {"id": user_id}).execute()
     print(response)
@@ -207,7 +246,7 @@ def get_profile(user_id: str, req: Request):
 
 
 @app.post("/api/create-profile")
-def create_profile(data:  CreateProfile, req: Request):
+async def create_profile(data:  CreateProfile, req: Request):
     response = supabase.from_("profile").insert(
         data.model_dump(mode="json", exclude_none=True)).execute()
     print(response)
@@ -216,7 +255,7 @@ def create_profile(data:  CreateProfile, req: Request):
 
 
 @app.put("/api/update-profile")
-def update_profile(
+async def update_profile(
         user_id: str, data:  UpdateProfile, req: Request
 ):
     response = supabase.table("profile").update(
@@ -228,7 +267,7 @@ def update_profile(
 
 
 @app.post("/api/generate-profile-monthly-messages")
-def generate_profile_monthly_messages(req: Request):
+async def generate_profile_monthly_messages(req: Request):
     prompt = """Generate a short message of the day.
         This will be used in an app called
         VIVID - visually intuitive & versatile interactive data strcuture.
@@ -266,9 +305,3 @@ def generate_profile_monthly_messages(req: Request):
     print(messages)
     print(req)
     return messages
-
-
-
-
-
-
