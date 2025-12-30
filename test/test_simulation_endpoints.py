@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import unittest
 import requests
 
@@ -15,32 +16,25 @@ class TestSimulationEndpoints(unittest.TestCase):
             print("[Exit] PROJECT_URL doesn't exist")
             exit(0)
         self.api_url = api_url
+        self.user_id = "3c219035-b751-4d5f-bdf3-215c69ae64d2"
 
     def test_get_simulation_response(self):
-        user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         simulation_type = SimulationType.STACK.value
         response = requests.get(
-            f"{self.api_url}/get-simulation?user_id={user_id}&simulation_type={simulation_type}"
+            f"{self.api_url}/get-simulation?user_id={self.user_id}&simulation_type={simulation_type}"
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
     def test_get_all_simulations_response(self):
-        user_id = "ee74dbf9-2dc2-491a-a2fa-141e229d74a7"
         response = requests.get(
-            f"{self.api_url}/get-all-simulations?user_id={user_id}"
+            f"{self.api_url}/get-all-simulations?user_id={self.user_id}"
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
     def test_create_simulation_response(self):
         data = CreateSimulation(
             type=SimulationType.STACK,
-            user_id="864b42da-8553-41bb-a2dd-2b0699845136",
+            user_id=self.user_id,
             status=SimulationStatus.NOT_VISITED,
             total_visits=1,
             last_visit_at=datetime.now(),
@@ -52,13 +46,9 @@ class TestSimulationEndpoints(unittest.TestCase):
             f"{self.api_url}/create-simulation",
             json=data.model_dump(mode="json")
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
     def test_update_simulation_response(self):
-        user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         simulation_type = SimulationType.STACK.value
         data = UpdateSimulation(
             status=SimulationStatus.IN_PROGRESS,
@@ -67,13 +57,24 @@ class TestSimulationEndpoints(unittest.TestCase):
             updated_at=datetime.now()
         )
         response = requests.put(
-            f"{self.api_url}/update-simulation?user_id={user_id}&simulation_type={simulation_type}",
+            f"{self.api_url}/update-simulation?user_id={self.user_id}&simulation_type={simulation_type}",
             json=data.model_dump(mode="json", exclude_none=True)
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
+
+    def test_update_simulation_time_spent_response(self):
+        payload = {
+            "access_token": "asdflkjsdlfjslkfjsdj",
+            "elapsed_secs": 10,
+            "updated_at": "2024-06-10T12:00:00Z"
+        }
+        response = requests.post(
+            f"{self.api_url}/update-simulation-time-spent?user_id={
+                self.user_id}&simulation_type={SimulationType.STACK.value}",
+            data=json.dumps(payload),
+            headers={"Content-Type": "application/json"}
+        )
+        self.assertEqual(response.status_code,  200)
 
 
 if __name__ == '__main__':
