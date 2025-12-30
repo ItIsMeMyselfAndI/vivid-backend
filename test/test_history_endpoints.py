@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import unittest
 import requests
 
@@ -15,27 +16,26 @@ class TestHistoryEndpoints(unittest.TestCase):
             print("[FAIL] PROJECT_URL doesn't exist")
             exit(0)
         self.api_url = api_url
+        self.history_id = 389
+        self.user_id = "9ac1cda9-b9b2-4915-9e05-53c44b192b2c"
 
     def test_get_history_response(self):
-        user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
-        history_id = 20
         response = requests.get(
-            f"{self.api_url}/get-settings?user_id={user_id}&history_id={history_id}"
+            f"{self.api_url}/get-settings?user_id={self.user_id}&history_id={self.history_id}"
         ).json()
         self.assertEqual(response.status_code,  200)
 
     def test_get_histories_from_bot_response(self):
-        user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         count = 5
         response = requests.get(
-            f"{self.api_url}/get-histories-from-bot?user_id={user_id}&count={count}"
+            f"{self.api_url}/get-histories-from-bot?user_id={self.user_id}&count={count}"
         ).json()
         self.assertEqual(response.status_code,  200)
 
     def test_create_history_response(self):
         data = CreateHistory(
             page="/dashboard",
-            user_id="864b42da-8553-41bb-a2dd-2b0699845136",
+            user_id=self.user_id,
             seconds_spent=0,
             updated_at=datetime.now(),
             created_at=datetime.now()
@@ -47,17 +47,28 @@ class TestHistoryEndpoints(unittest.TestCase):
         self.assertEqual(response.status_code,  200)
 
     def test_update_history_response(self):
-        user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
-        history_id = 6
         data = UpdateHistory(
             page="/simulation",
             seconds_spent=4,
             updated_at=datetime.now(),
         )
         response = requests.put(
-            f"{self.api_url}/update-history?user_id={user_id}&history_id={history_id}",
+            f"{self.api_url}/update-history?user_id={self.user_id}&history_id={self.history_id}",
             json=data.model_dump(mode="json", exclude_none=True)
         ).json()
+        self.assertEqual(response.status_code,  200)
+
+    def test_update_history_time_spent_response(self):
+        payload = {
+            "access_token": "asdflkjsdlfjslkfjsdj",
+            "elapsed_secs": 10,
+            "updated_at": "2024-06-10T12:00:00Z"
+        }
+        response = requests.post(
+            f"{self.api_url}/update-history-time-spent?user_id={self.user_id}&history_id={self.history_id}",
+            data=json.dumps(payload),
+            headers={"Content-Type": "application/json"}
+        )
         self.assertEqual(response.status_code,  200)
 
 
