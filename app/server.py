@@ -93,10 +93,19 @@ async def update_simulation(
 async def update_simulation_on_exit(
         user_id: str, simulation_type: SimulationType, req: Request
 ):
+    response = supabase.table("simulation").select("*").match(
+        {"user_id": user_id, "type": simulation_type.value}
+    ).single().execute()
+    sim = response.data
+    if type(sim) is not dict:
+        return response
     req_body = await req.body()
     blob = json.loads(req_body.decode())
+    print(blob)
+    elapsed_secs = blob["elapsed_secs"]
     data = UpdateSimulation(
-        seconds_spent=blob["seconds_spent"], updated_at=blob["updated_at"]
+        seconds_spent=sim["seconds_spent"]+elapsed_secs,
+        updated_at=blob["updated_at"]
     )
     print("blob")
     print(data)
@@ -216,13 +225,22 @@ async def update_stats(
 
 
 @app.post("/api/update-stats-time-spent")
-async def update_stats_on_exit(
+async def update_stas_on_exit(
         user_id: str, req: Request
 ):
+    response = supabase.table("stats").select("*").match(
+        {"user_id": user_id}
+    ).single().execute()
+    sim = response.data
+    if type(sim) is not dict:
+        return response
     req_body = await req.body()
     blob = json.loads(req_body.decode())
+    print(blob)
+    elapsed_secs = blob["elapsed_secs"]
     data = UpdateSimulation(
-        seconds_spent=blob["seconds_spent"], updated_at=blob["updated_at"]
+        seconds_spent=sim["seconds_spent"]+elapsed_secs,
+        updated_at=blob["updated_at"]
     )
     print("blob")
     print(data)

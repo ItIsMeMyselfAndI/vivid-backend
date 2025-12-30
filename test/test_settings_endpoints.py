@@ -21,10 +21,7 @@ class TestSettingsEndpoints(unittest.TestCase):
         response = requests.get(
             f"{self.api_url}/get-settings?user_id={user_id}"
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
     def test_create_settings_response(self):
         data = CreateSettings(
@@ -38,10 +35,7 @@ class TestSettingsEndpoints(unittest.TestCase):
             f"{self.api_url}/create-settings",
             json=data.model_dump(mode="json")
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
     def test_update_settings_response(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
@@ -54,10 +48,7 @@ class TestSettingsEndpoints(unittest.TestCase):
             f"{self.api_url}/update-settings?user_id={user_id}",
             json=data.model_dump(mode="json", exclude_none=True)
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
 
 if __name__ == '__main__':

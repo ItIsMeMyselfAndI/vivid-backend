@@ -22,10 +22,7 @@ class TestHistoryEndpoints(unittest.TestCase):
         response = requests.get(
             f"{self.api_url}/get-settings?user_id={user_id}&history_id={history_id}"
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
     def test_get_histories_from_bot_response(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
@@ -33,10 +30,7 @@ class TestHistoryEndpoints(unittest.TestCase):
         response = requests.get(
             f"{self.api_url}/get-histories-from-bot?user_id={user_id}&count={count}"
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
     def test_create_history_response(self):
         data = CreateHistory(
@@ -50,10 +44,7 @@ class TestHistoryEndpoints(unittest.TestCase):
             f"{self.api_url}/create-history",
             json=data.model_dump(mode="json")
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
     def test_update_history_response(self):
         user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
@@ -67,10 +58,7 @@ class TestHistoryEndpoints(unittest.TestCase):
             f"{self.api_url}/update-history?user_id={user_id}&history_id={history_id}",
             json=data.model_dump(mode="json", exclude_none=True)
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
 
 if __name__ == '__main__':

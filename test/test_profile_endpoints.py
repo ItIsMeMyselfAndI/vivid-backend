@@ -21,10 +21,7 @@ class TestProfileEndpoints(unittest.TestCase):
         response = requests.get(
             f"{self.api_url}/get-profile?user_id={self.user_id}"
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
     # def test_create_profile_response(self):
     #     data = CreateProfile(
@@ -38,10 +35,7 @@ class TestProfileEndpoints(unittest.TestCase):
     #         f"{self.api_url}/create-profile",
     #         json=data.model_dump(mode="json")
     #     ).json()
-    #     try:
-    #         print("[INFO]", response["data"])
-    #     except Exception as e:
-    #         self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        # self.assertEqual(response.status_code,  200)
 
     def test_update_profile_response(self):
         data = UpdateProfile(
@@ -54,19 +48,13 @@ class TestProfileEndpoints(unittest.TestCase):
             f"{self.api_url}/update-profile?user_id={self.user_id}",
             json=data.model_dump(mode="json", exclude_none=True)
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
     def test_generate_profile_monthly_messages(self):
-        messages = requests.post(
+        response = requests.post(
             f"{self.api_url}/generate-profile-monthly-messages",
         )
-        try:
-            print("[INFO]", messages.json())
-        except Exception as e:
-            self.fail(f"[FAIL] massage doesn't exist: {e}")
+        self.assertEqual(response.status_code,  200)
 
 
 if __name__ == '__main__':

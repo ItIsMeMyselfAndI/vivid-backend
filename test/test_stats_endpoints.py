@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import unittest
 import requests
 
@@ -15,20 +16,17 @@ class TestStatsEndpoints(unittest.TestCase):
             print("[FAIL] PROJECT_URL doesn't exist")
             exit(0)
         self.api_url = api_url
+        self.user_id = "9ac1cda9-b9b2-4915-9e05-53c44b192b2c"
 
     def test_get_stats_response(self):
-        user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         response = requests.get(
-            f"{self.api_url}/get-stats?user_id={user_id}"
+            f"{self.api_url}/get-stats?user_id={self.user_id}"
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
     def test_create_stats_response(self):
         data = CreateStats(
-            user_id="864b42da-8553-41bb-a2dd-2b0699845136",
+            user_id=self.user_id,
             current_streak=0,
             longest_streak=0,
             seconds_spent=0,
@@ -39,13 +37,9 @@ class TestStatsEndpoints(unittest.TestCase):
             f"{self.api_url}/create-stats",
             json=data.model_dump(mode="json")
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
 
     def test_update_stats_response(self):
-        user_id = "864b42da-8553-41bb-a2dd-2b0699845136"
         data = UpdateStats(
             current_streak=9,
             longest_streak=9,
@@ -53,13 +47,23 @@ class TestStatsEndpoints(unittest.TestCase):
             updated_at=datetime.now()
         )
         response = requests.put(
-            f"{self.api_url}/update-stats?user_id={user_id}",
+            f"{self.api_url}/update-stats?user_id={self.user_id}",
             json=data.model_dump(mode="json", exclude_none=True)
         ).json()
-        try:
-            print("[INFO]", response["data"])
-        except Exception as e:
-            self.fail(f"[FAIL] data doesn't exist on the response: {e}")
+        self.assertEqual(response.status_code,  200)
+
+    def test_update_stats_time_spent_response(self):
+        payload = {
+            "access_token": "asdflkjsdlfjslkfjsdj",
+            "elapsed_secs": 10,
+            "updated_at": "2024-06-10T12:00:00Z"
+        }
+        response = requests.post(
+            f"{self.api_url}/update-stats-time-spent?user_id={self.user_id}",
+            data=json.dumps(payload),
+            headers={"Content-Type": "application/json"}
+        )
+        self.assertEqual(response.status_code,  200)
 
 
 if __name__ == '__main__':
