@@ -372,7 +372,7 @@ async def generate_profile_monthly_messages(authorization: str = Header(None)):
         the use of automated simulations based on user input. I want you
         to generate motivating & encauraging words to support the user.
             make it short sentence of 5-10 words.
-            generate 31 messages, separated by | no spaces before and after."
+            generate 50 diff messages, separated by | no spaces before and after."
             """
     client = OpenAI(
         base_url=OPEN_ROUTER_URL,
