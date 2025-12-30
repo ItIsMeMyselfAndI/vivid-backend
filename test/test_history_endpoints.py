@@ -60,7 +60,7 @@ class TestHistoryEndpoints(unittest.TestCase):
 
     def test_update_history_time_spent_response(self):
         payload = {
-            "access_token": "asdflkjsdlfjslkfjsdj",
+            "authorization": "asdflkjsdlfjslkfjsdj",
             "elapsed_secs": 10,
             "updated_at": "2024-06-10T12:00:00Z"
         }
