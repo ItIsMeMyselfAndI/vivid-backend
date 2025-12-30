@@ -50,6 +50,7 @@ OPEN_ROUTER_API_KEY = os.environ.get("OPEN_ROUTER_API_KEY")
 
 
 def isUserLegit(authorization: str):
+    print(authorization)
     if not authorization.startswith("Bearer "):
         return False
     access_token = authorization.split(" ")[1]
@@ -115,7 +116,7 @@ async def update_simulation_time_spent(
     req_body = await req.body()
     blob = json.loads(req_body.decode())
     print(blob)
-    if not isUserLegit(blob["access_token"]):
+    if not isUserLegit(blob["authorization"]):
         return HTTPException(status_code=400, detail="Invalid JWT")
     response = supabase.table("simulation").select("*").match(
         {"user_id": user_id, "type": simulation_type.value}
@@ -192,7 +193,7 @@ async def update_history_time_spent(user_id: str,
     req_body = await req.body()
     blob = json.loads(req_body.decode())
     print(blob)
-    if not isUserLegit(blob["access_token"]):
+    if not isUserLegit(blob["authorization"]):
         return HTTPException(status_code=400, detail="Invalid JWT")
     response = supabase.table("history").select("*").match(
         {"user_id": user_id,  "id": history_id}
@@ -293,7 +294,7 @@ async def update_stats_time_spent(
     req_body = await req.body()
     blob = json.loads(req_body.decode())
     print(blob)
-    if not isUserLegit(blob["access_token"]):
+    if not isUserLegit(blob["authorization"]):
         return HTTPException(status_code=400, detail="Invalid JWT")
     response = supabase.table("stats").select("*").match(
         {"user_id": user_id}
