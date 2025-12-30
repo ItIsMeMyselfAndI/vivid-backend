@@ -90,7 +90,7 @@ async def update_simulation(
 
 
 @app.post("/api/update-simulation-time-spent")
-async def update_simulation_on_exit(
+async def update_simulation_time_spent(
         user_id: str, simulation_type: SimulationType, req: Request
 ):
     response = supabase.table("simulation").select("*").match(
@@ -155,6 +155,34 @@ async def update_history(
     response = supabase.table("history").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id, "id": history_id}).execute()
+    print(response)
+    print(req)
+    return response
+
+
+@app.post("/api/update-history-time-spent")
+async def update_history_time_spent(
+        user_id: str, history_id: int, req: Request
+):
+    response = supabase.table("history").select("*").match(
+        {"user_id": user_id,  "id": history_id}
+    ).single().execute()
+    sim = response.data
+    if type(sim) is not dict:
+        return response
+    req_body = await req.body()
+    blob = json.loads(req_body.decode())
+    print(blob)
+    elapsed_secs = blob["elapsed_secs"]
+    data = UpdateHistory(
+        seconds_spent=sim["seconds_spent"]+elapsed_secs,
+        updated_at=blob["updated_at"]
+    )
+    print("blob")
+    print(data)
+    response = supabase.table("history").update(
+        data.model_dump(mode="json", exclude_none=True)
+        ).match({"user_id": user_id, "id": history_id}).execute()
     print(response)
     print(req)
     return response
@@ -225,7 +253,7 @@ async def update_stats(
 
 
 @app.post("/api/update-stats-time-spent")
-async def update_stas_on_exit(
+async def update_stats_time_spent(
         user_id: str, req: Request
 ):
     response = supabase.table("stats").select("*").match(
