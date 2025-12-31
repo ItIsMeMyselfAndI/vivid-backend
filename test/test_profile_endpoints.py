@@ -40,7 +40,6 @@ class TestProfileEndpoints(unittest.TestCase):
     def test_update_profile_response(self):
         data = UpdateProfile(
             username="ger",
-            email="egermirasol2023@gmail.com",
             monthly_messages=["hello world", "ldskfslkdjf"],
             updated_at=datetime.now()
         )
