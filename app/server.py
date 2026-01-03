@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 from openai import OpenAI
 from schema.profile import CreateProfile, UpdateProfile
 from schema.simulation import (
@@ -120,7 +121,9 @@ async def update_simulation_time_spent(
         return HTTPException(status_code=400, detail="Invalid JWT")
     response = supabase.table("simulation").select("*").match(
         {"user_id": user_id, "type": simulation_type.value}
-    ).single().execute()
+    ).execute()
+    if not response.data:
+        return HTTPException(status_code=400, detail="No stats entry")
     sim = response.data
     if type(sim) is not dict:
         return response
@@ -152,13 +155,32 @@ async def get_history(user_id: str, history_id: int,
 
 
 @app.get("/api/get-histories-from-bot")
-async def get_histories_from_bot(user_id: str, count: int,
+async def get_histories_from_bot(user_id: str, limit: int,
+                                 cursor: Optional[int] = None,
                                  authorization: str = Header(None)):
     if not isUserLegit(authorization):
         return HTTPException(status_code=400, detail="Invalid JWT")
-    response = supabase.table("history").select("*").match(
-        {"user_id": user_id}
-    ).order("created_at", desc=True).limit(count).execute()
+    if not cursor:
+        result = supabase.table("history").select("*").match(
+            {"user_id": user_id}
+        ).order("created_at", desc=True).limit(limit).execute()
+    else:
+        result = supabase.table("history").select("*").match(
+            {"user_id": user_id}
+        ).order(
+            "created_at", desc=True
+        ).lt("id", cursor).limit(limit).execute()
+    if not result.data:
+        return HTTPException(status_code=400, detail=result)
+    if type(result.data[-1]) is not dict:
+        return HTTPException(status_code=400, detail=result)
+    response = {
+        "data": result.data,
+        "pagination": {
+            "cursor": result.data[-1]["id"],
+            "count": len(result.data)
+        }
+    }
     print(response)
     return response
 
@@ -197,7 +219,9 @@ async def update_history_time_spent(user_id: str,
         return HTTPException(status_code=400, detail="Invalid JWT")
     response = supabase.table("history").select("*").match(
         {"user_id": user_id,  "id": history_id}
-    ).single().execute()
+    ).execute()
+    if not response.data:
+        return HTTPException(status_code=400, detail="No stats entry")
     sim = response.data
     if type(sim) is not dict:
         return response
@@ -298,7 +322,9 @@ async def update_stats_time_spent(
         return HTTPException(status_code=400, detail="Invalid JWT")
     response = supabase.table("stats").select("*").match(
         {"user_id": user_id}
-    ).single().execute()
+    ).execute()
+    if not response.data:
+        return HTTPException(status_code=400, detail="No stats entry")
     sim = response.data
     if type(sim) is not dict:
         return response

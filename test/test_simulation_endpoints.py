@@ -16,19 +16,19 @@ class TestSimulationEndpoints(unittest.TestCase):
             print("[Exit] PROJECT_URL doesn't exist")
             exit(0)
         self.api_url = api_url
-        self.user_id = "3c219035-b751-4d5f-bdf3-215c69ae64d2"
+        self.user_id = "25e7429d-b412-4514-b0d2-36a6bd56fc67"
 
     def test_get_simulation_response(self):
         simulation_type = SimulationType.STACK.value
         response = requests.get(
             f"{self.api_url}/get-simulation?user_id={self.user_id}&simulation_type={simulation_type}"
-        ).json()
+        )
         self.assertEqual(response.status_code,  200)
 
     def test_get_all_simulations_response(self):
         response = requests.get(
             f"{self.api_url}/get-all-simulations?user_id={self.user_id}"
-        ).json()
+        )
         self.assertEqual(response.status_code,  200)
 
     def test_create_simulation_response(self):
@@ -45,7 +45,7 @@ class TestSimulationEndpoints(unittest.TestCase):
         response = requests.post(
             f"{self.api_url}/create-simulation",
             json=data.model_dump(mode="json")
-        ).json()
+        )
         self.assertEqual(response.status_code,  200)
 
     def test_update_simulation_response(self):
@@ -59,7 +59,7 @@ class TestSimulationEndpoints(unittest.TestCase):
         response = requests.put(
             f"{self.api_url}/update-simulation?user_id={self.user_id}&simulation_type={simulation_type}",
             json=data.model_dump(mode="json", exclude_none=True)
-        ).json()
+        )
         self.assertEqual(response.status_code,  200)
 
     def test_update_simulation_time_spent_response(self):

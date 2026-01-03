@@ -17,19 +17,23 @@ class TestHistoryEndpoints(unittest.TestCase):
             exit(0)
         self.api_url = api_url
         self.history_id = 389
-        self.user_id = "9ac1cda9-b9b2-4915-9e05-53c44b192b2c"
+        self.user_id = "25e7429d-b412-4514-b0d2-36a6bd56fc67"
 
     def test_get_history_response(self):
         response = requests.get(
-            f"{self.api_url}/get-settings?user_id={self.user_id}&history_id={self.history_id}"
-        ).json()
+            f"{self.api_url}/get-history?user_id={self.user_id}&history_id={self.history_id}"
+        )
         self.assertEqual(response.status_code,  200)
 
     def test_get_histories_from_bot_response(self):
-        count = 5
+        limit = 5
+        cursor = 1690
         response = requests.get(
-            f"{self.api_url}/get-histories-from-bot?user_id={self.user_id}&count={count}"
-        ).json()
+            f"{self.api_url}/get-histories-from-bot?user_id={
+                self.user_id
+            }&cursor={cursor}&limit={limit}"
+        )
+        print(response.json())
         self.assertEqual(response.status_code,  200)
 
     def test_create_history_response(self):
@@ -43,7 +47,7 @@ class TestHistoryEndpoints(unittest.TestCase):
         response = requests.post(
             f"{self.api_url}/create-history",
             json=data.model_dump(mode="json")
-        ).json()
+        )
         self.assertEqual(response.status_code,  200)
 
     def test_update_history_response(self):
@@ -55,7 +59,7 @@ class TestHistoryEndpoints(unittest.TestCase):
         response = requests.put(
             f"{self.api_url}/update-history?user_id={self.user_id}&history_id={self.history_id}",
             json=data.model_dump(mode="json", exclude_none=True)
-        ).json()
+        )
         self.assertEqual(response.status_code,  200)
 
     def test_update_history_time_spent_response(self):
@@ -65,7 +69,8 @@ class TestHistoryEndpoints(unittest.TestCase):
             "updated_at": "2024-06-10T12:00:00Z"
         }
         response = requests.post(
-            f"{self.api_url}/update-history-time-spent?user_id={self.user_id}&history_id={self.history_id}",
+            f"{self.api_url}/update-history-time-spent?user_id={
+                self.user_id}&history_id={self.history_id}",
             data=json.dumps(payload),
             headers={"Content-Type": "application/json"}
         )

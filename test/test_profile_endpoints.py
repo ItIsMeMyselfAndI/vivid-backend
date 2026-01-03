@@ -15,12 +15,12 @@ class TestProfileEndpoints(unittest.TestCase):
             print("[FAIL] PROJECT_URL doesn't exist")
             exit(0)
         self.api_url = api_url
-        self.user_id = "9ac1cda9-b9b2-4915-9e05-53c44b192b2c"
+        self.user_id = "25e7429d-b412-4514-b0d2-36a6bd56fc67"
 
     def test_get_profile_response(self):
         response = requests.get(
             f"{self.api_url}/get-profile?user_id={self.user_id}"
-        ).json()
+        )
         self.assertEqual(response.status_code,  200)
 
     # def test_create_profile_response(self):
@@ -34,7 +34,7 @@ class TestProfileEndpoints(unittest.TestCase):
     #     response = requests.post(
     #         f"{self.api_url}/create-profile",
     #         json=data.model_dump(mode="json")
-    #     ).json()
+    #     )
         # self.assertEqual(response.status_code,  200)
 
     def test_update_profile_response(self):
@@ -46,7 +46,7 @@ class TestProfileEndpoints(unittest.TestCase):
         response = requests.put(
             f"{self.api_url}/update-profile?user_id={self.user_id}",
             json=data.model_dump(mode="json", exclude_none=True)
-        ).json()
+        )
         self.assertEqual(response.status_code,  200)
 
     def test_generate_profile_monthly_messages(self):
