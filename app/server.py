@@ -156,7 +156,7 @@ async def get_history(user_id: str, history_id: int,
 
 @app.get("/api/get-histories-from-bot")
 async def get_histories_from_bot(user_id: str, limit: int,
-                                 cursor: Optional[str] = None,
+                                 cursor: Optional[int] = None,
                                  authorization: str = Header(None)):
     if not isUserLegit(authorization):
         return HTTPException(status_code=400, detail="Invalid JWT")
@@ -169,16 +169,19 @@ async def get_histories_from_bot(user_id: str, limit: int,
             {"user_id": user_id}
         ).order(
             "created_at", desc=True
-        ).gt("id", cursor).limit(limit).execute()
-    if not result.data or type(result.data[0]) is not dict:
+        ).lt("id", cursor).limit(limit).execute()
+    if not result.data:
+        return HTTPException(status_code=400, detail=result)
+    if type(result.data[-1]) is not dict:
         return HTTPException(status_code=400, detail=result)
     response = {
         "data": result.data,
         "pagination": {
-            "cursor": result.data[0]["id"],
+            "cursor": result.data[-1]["id"],
             "count": len(result.data)
         }
     }
+    print(response)
     return response
 
 

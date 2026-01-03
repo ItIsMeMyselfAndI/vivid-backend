@@ -27,10 +27,11 @@ class TestHistoryEndpoints(unittest.TestCase):
 
     def test_get_histories_from_bot_response(self):
         limit = 5
+        cursor = 1690
         response = requests.get(
             f"{self.api_url}/get-histories-from-bot?user_id={
                 self.user_id
-            }&limit={limit}"
+            }&cursor={cursor}&limit={limit}"
         )
         print(response.json())
         self.assertEqual(response.status_code,  200)
