@@ -16,7 +16,7 @@ class TestHistoryEndpoints(unittest.TestCase):
             print("[FAIL] PROJECT_URL doesn't exist")
             exit(0)
         self.api_url = api_url
-        self.history_id = 389
+        self.history_id = 1327
         self.user_id = "25e7429d-b412-4514-b0d2-36a6bd56fc67"
 
     def test_get_history_response(self):
@@ -74,6 +74,7 @@ class TestHistoryEndpoints(unittest.TestCase):
             data=json.dumps(payload),
             headers={"Content-Type": "application/json"}
         )
+        print(response.json())
         self.assertEqual(response.status_code,  200)
 
 

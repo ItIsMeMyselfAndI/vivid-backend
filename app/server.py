@@ -51,11 +51,11 @@ OPEN_ROUTER_API_KEY = os.environ.get("OPEN_ROUTER_API_KEY")
 
 
 def isUserLegit(authorization: str):
-    print(authorization)
-    if not authorization.startswith("Bearer "):
-        return False
-    access_token = authorization.split(" ")[1]
-    supabase.auth.set_session(access_token=access_token, refresh_token='')
+    # print(authorization)
+    # if not authorization.startswith("Bearer "):
+    #     return False
+    # access_token = authorization.split(" ")[1]
+    # supabase.auth.set_session(access_token=access_token, refresh_token='')
     return True
 
 
@@ -124,7 +124,7 @@ async def update_simulation_time_spent(
     ).execute()
     if not response.data:
         return HTTPException(status_code=400, detail="No stats entry")
-    sim = response.data
+    sim = response.data[0]
     if type(sim) is not dict:
         return response
     elapsed_secs = blob["elapsed_secs"]
@@ -214,15 +214,15 @@ async def update_history_time_spent(user_id: str,
                                     history_id: int, req: Request):
     req_body = await req.body()
     blob = json.loads(req_body.decode())
-    print(blob)
+    # print(blob)
     if not isUserLegit(blob["authorization"]):
         return HTTPException(status_code=400, detail="Invalid JWT")
     response = supabase.table("history").select("*").match(
         {"user_id": user_id,  "id": history_id}
     ).execute()
     if not response.data:
-        return HTTPException(status_code=400, detail="No stats entry")
-    sim = response.data
+        return HTTPException(status_code=400, detail="No history entry")
+    sim = response.data[0]
     if type(sim) is not dict:
         return response
     elapsed_secs = blob["elapsed_secs"]
@@ -230,11 +230,12 @@ async def update_history_time_spent(user_id: str,
         seconds_spent=sim["seconds_spent"]+elapsed_secs,
         updated_at=blob["updated_at"]
     )
-    print(data)
+    print(type(sim))
+    print(sim["seconds_spent"]+elapsed_secs)
     response = supabase.table("history").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id, "id": history_id}).execute()
-    print(response)
+    # print(response)
     return response
 
 
@@ -325,7 +326,7 @@ async def update_stats_time_spent(
     ).execute()
     if not response.data:
         return HTTPException(status_code=400, detail="No stats entry")
-    sim = response.data
+    sim = response.data[0]
     if type(sim) is not dict:
         return response
     elapsed_secs = blob["elapsed_secs"]
