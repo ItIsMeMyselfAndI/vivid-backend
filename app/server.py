@@ -1,23 +1,33 @@
-import json
-from typing import Annotated, Optional
+from datetime import datetime
+from typing import Annotated, Optional, Tuple
 from openai import OpenAI
-from schema.profile import CreateProfile, UpdateProfile
+from supabase import create_client, Client
+from fastapi import Depends, FastAPI, HTTPException, Header, Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, ConfigDict, Field
+from dotenv import load_dotenv
+import os
+
 from schema.simulation import (
     CreateSimulation, UpdateSimulation, SimulationType
 )
+from schema.profile import CreateProfile, UpdateProfile
 from schema.settings import CreateSettings, UpdateSettings
 from schema.history import CreateHistory, UpdateHistory
-from client.index import supabase
-
-from fastapi import Depends, FastAPI, HTTPException, Header, Request
-from fastapi.middleware.cors import CORSMiddleware
-import os
-from dotenv import load_dotenv
-
 from schema.stats import CreateStats, UpdateStats
 
-
 load_dotenv()
+
+
+class TimeSpentPayload(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    elapsed_secs: float = Field(ge=0)
+    updated_at: datetime
+
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_ANON_KEY")
+
 PROJECT_URL = os.environ.get("PROJECT_URL")
 PROJECT_ORIGINS = os.environ.get("PROJECT_ORIGINS", PROJECT_URL or "")
 ALLOWED_ORIGINS = [o.strip() for o in PROJECT_ORIGINS.split(",") if o.strip()]
@@ -39,7 +49,7 @@ OPEN_ROUTER_API_KEY = os.environ.get("OPEN_ROUTER_API_KEY")
 async def validate_token(
     request: Request,
     authorization: Annotated[Optional[str], Header()] = None,
-) -> str:
+):
     token = authorization
     if not token:
         # beacon fallback
@@ -53,18 +63,22 @@ async def validate_token(
         raise HTTPException(
             status_code=401, detail="Missing or invalid Authorization token")
     access_token = token.split(" ", 1)[1]
-    supabase.auth.set_session(access_token=access_token, refresh_token="")
-    return token
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        raise RuntimeError("[Exit] No user_supabase url or key")
+    user_supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    user_supabase.auth.set_session(access_token=access_token, refresh_token="")
+    return token, user_supabase
 
-Auth = Annotated[str, Depends(validate_token)]
+Auth = Annotated[Tuple[str, Client], Depends(validate_token)]
 
 
 # ----- simulation endpoints -----
 
 @app.get("/api/get-simulation")
-async def get_simulation(user_id: str, simulation_type: SimulationType,
-                         auth: Auth):
-    response = supabase.table("simulation").select("*").match(
+async def get_simulation(user_id: str,
+                         simulation_type: SimulationType, auth: Auth):
+    token, user_supabase = auth
+    response = user_supabase.table("simulation").select("*").match(
         {"user_id": user_id, "type": simulation_type.value}
     ).execute()
     print(response)
@@ -73,7 +87,8 @@ async def get_simulation(user_id: str, simulation_type: SimulationType,
 
 @app.get("/api/get-all-simulations")
 async def get_all_simulations(user_id: str, auth: Auth):
-    response = supabase.table("simulation").select("*").match(
+    token, user_supabase = auth
+    response = user_supabase.table("simulation").select("*").match(
         {"user_id": user_id}
     ).execute()
     print(response)
@@ -82,7 +97,8 @@ async def get_all_simulations(user_id: str, auth: Auth):
 
 @app.post("/api/create-simulation")
 async def create_simulation(data:  CreateSimulation, auth: Auth):
-    response = supabase.table("simulation").insert(
+    token, user_supabase = auth
+    response = user_supabase.table("simulation").insert(
         data.model_dump(mode="json")).execute()
     print(response)
     return response
@@ -93,7 +109,8 @@ async def update_simulation(
         user_id: str, simulation_type: SimulationType,
         data:  UpdateSimulation, auth: Auth
 ):
-    response = supabase.table("simulation").update(
+    token, user_supabase = auth
+    response = user_supabase.table("simulation").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id, "type": simulation_type.value}).execute()
     print(response)
@@ -103,26 +120,23 @@ async def update_simulation(
 @app.post("/api/update-simulation-time-spent")
 async def update_simulation_time_spent(
         user_id: str, simulation_type: SimulationType,
-        req: Request
+        payload: TimeSpentPayload, auth: Auth
 ):
-    req_body = await req.body()
-    blob = json.loads(req_body.decode())
-    print(blob)
-    response = supabase.table("simulation").select("*").match(
+    token, user_supabase = auth
+    response = user_supabase.table("simulation").select("*").match(
         {"user_id": user_id, "type": simulation_type.value}
     ).execute()
     if not response.data:
-        return HTTPException(status_code=400, detail="No stats entry")
+        raise HTTPException(status_code=400, detail="No stats entry")
     sim = response.data[0]
     if type(sim) is not dict:
         return response
-    elapsed_secs = blob["elapsed_secs"]
     data = UpdateSimulation(
-        seconds_spent=sim["seconds_spent"]+elapsed_secs,
-        updated_at=blob["updated_at"]
+        seconds_spent=sim["seconds_spent"]+payload.elapsed_secs,
+        updated_at=payload.updated_at
     )
     print(data)
-    response = supabase.table("simulation").update(
+    response = user_supabase.table("simulation").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id, "type": simulation_type.value}).execute()
     print(response)
@@ -133,7 +147,8 @@ async def update_simulation_time_spent(
 
 @app.get("/api/get-history")
 async def get_history(user_id: str, history_id: int, auth: Auth):
-    response = supabase.table("history").select("*").match(
+    token, user_supabase = auth
+    response = user_supabase.table("history").select("*").match(
         {"user_id": user_id, "id": history_id}
     ).execute()
     print(response)
@@ -144,20 +159,21 @@ async def get_history(user_id: str, history_id: int, auth: Auth):
 async def get_histories_from_bot(user_id: str, limit: int,
                                  auth: Auth, cursor: Optional[int] = None,
                                  ):
+    token, user_supabase = auth
     if not cursor:
-        result = supabase.table("history").select("*").match(
+        result = user_supabase.table("history").select("*").match(
             {"user_id": user_id}
         ).order("created_at", desc=True).limit(limit).execute()
     else:
-        result = supabase.table("history").select("*").match(
+        result = user_supabase.table("history").select("*").match(
             {"user_id": user_id}
         ).order(
             "created_at", desc=True
         ).lt("id", cursor).limit(limit).execute()
     if not result.data:
-        return HTTPException(status_code=400, detail=result)
+        raise HTTPException(status_code=400, detail=result)
     if type(result.data[-1]) is not dict:
-        return HTTPException(status_code=400, detail=result)
+        raise HTTPException(status_code=400, detail=result)
     response = {
         "data": result.data,
         "pagination": {
@@ -171,7 +187,8 @@ async def get_histories_from_bot(user_id: str, limit: int,
 
 @app.post("/api/create-history")
 async def create_history(data:  CreateHistory, auth: Auth):
-    response = supabase.table("history").insert(
+    token, user_supabase = auth
+    response = user_supabase.table("history").insert(
         data.model_dump(mode="json")).execute()
     print(response)
     return response
@@ -180,7 +197,8 @@ async def create_history(data:  CreateHistory, auth: Auth):
 @app.put("/api/update-history")
 async def update_history(user_id: str, history_id: int,
                          data:  UpdateHistory, auth: Auth):
-    response = supabase.table("history").update(
+    token, user_supabase = auth
+    response = user_supabase.table("history").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id, "id": history_id}).execute()
     print(response)
@@ -188,27 +206,22 @@ async def update_history(user_id: str, history_id: int,
 
 
 @app.post("/api/update-history-time-spent")
-async def update_history_time_spent(user_id: str,
-                                    history_id: int, req: Request):
-    req_body = await req.body()
-    blob = json.loads(req_body.decode())
-    # print(blob)
-    response = supabase.table("history").select("*").match(
+async def update_history_time_spent(user_id: str, history_id: int,
+                                    payload: TimeSpentPayload, auth: Auth):
+    token, user_supabase = auth
+    response = user_supabase.table("history").select("*").match(
         {"user_id": user_id,  "id": history_id}
     ).execute()
     if not response.data:
-        return HTTPException(status_code=400, detail="No history entry")
+        raise HTTPException(status_code=400, detail="No history entry")
     sim = response.data[0]
     if type(sim) is not dict:
         return response
-    elapsed_secs = blob["elapsed_secs"]
     data = UpdateHistory(
-        seconds_spent=sim["seconds_spent"]+elapsed_secs,
-        updated_at=blob["updated_at"]
+        seconds_spent=sim["seconds_spent"]+payload.elapsed_secs,
+        updated_at=payload.updated_at
     )
-    print(type(sim))
-    print(sim["seconds_spent"]+elapsed_secs)
-    response = supabase.table("history").update(
+    response = user_supabase.table("history").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id, "id": history_id}).execute()
     # print(response)
@@ -219,7 +232,8 @@ async def update_history_time_spent(user_id: str,
 
 @app.get("/api/get-settings")
 async def get_settings(user_id: str, auth: Auth):
-    response = supabase.table("settings").select("*").match(
+    token, user_supabase = auth
+    response = user_supabase.table("settings").select("*").match(
         {"user_id": user_id}).execute()
     print(response)
     return response
@@ -228,17 +242,18 @@ async def get_settings(user_id: str, auth: Auth):
 @app.post("/api/create-settings")
 async def create_settings(data:  CreateSettings,
                           auth: Auth):
-    response = supabase.table("settings").insert(
+    token, user_supabase = auth
+    response = user_supabase.table("settings").insert(
         data.model_dump(mode="json")).execute()
     print(response)
     return response
 
 
 @app.put("/api/update-settings")
-async def update_settings(
-    user_id: str, data:  UpdateSettings,
-        auth: Auth):
-    response = supabase.table("settings").update(
+async def update_settings(user_id: str,
+                          data:  UpdateSettings, auth: Auth):
+    token, user_supabase = auth
+    response = user_supabase.table("settings").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id}).execute()
     print(response)
@@ -248,28 +263,27 @@ async def update_settings(
 # ----- stats endpoints -----
 
 @app.get("/api/get-stats")
-async def get_stats(user_id: str,
-                    auth: Auth):
-    response = supabase.table("stats").select("*").match(
+async def get_stats(user_id: str, auth: Auth):
+    token, user_supabase = auth
+    response = user_supabase.table("stats").select("*").match(
         {"user_id": user_id}).execute()
     print(response)
     return response
 
 
 @app.post("/api/create-stats")
-async def create_stats(data:  CreateStats,
-                       auth: Auth):
-    response = supabase.table("stats").insert(
+async def create_stats(data:  CreateStats, auth: Auth):
+    token, user_supabase = auth
+    response = user_supabase.table("stats").insert(
         data.model_dump(mode="json")).execute()
     print(response)
     return response
 
 
 @app.put("/api/update-stats")
-async def update_stats(
-    user_id: str, data:  UpdateStats,
-        auth: Auth):
-    response = supabase.table("stats").update(
+async def update_stats(user_id: str, data:  UpdateStats, auth: Auth):
+    token, user_supabase = auth
+    response = user_supabase.table("stats").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id}).execute()
     print(response)
@@ -278,26 +292,23 @@ async def update_stats(
 
 @app.post("/api/update-stats-time-spent")
 async def update_stats_time_spent(
-        user_id: str, req: Request
+        user_id: str, payload: TimeSpentPayload, auth: Auth
 ):
-    req_body = await req.body()
-    blob = json.loads(req_body.decode())
-    print(blob)
-    response = supabase.table("stats").select("*").match(
+    token, user_supabase = auth
+    response = user_supabase.table("stats").select("*").match(
         {"user_id": user_id}
     ).execute()
     if not response.data:
-        return HTTPException(status_code=400, detail="No stats entry")
+        raise HTTPException(status_code=400, detail="No stats entry")
     sim = response.data[0]
     if type(sim) is not dict:
         return response
-    elapsed_secs = blob["elapsed_secs"]
-    data = UpdateSimulation(
-        seconds_spent=sim["seconds_spent"]+elapsed_secs,
-        updated_at=blob["updated_at"]
+    data = UpdateStats(
+        seconds_spent=sim["seconds_spent"]+payload.elapsed_secs,
+        updated_at=payload.updated_at
     )
     print(data)
-    response = supabase.table("stats").update(
+    response = user_supabase.table("stats").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"user_id": user_id}).execute()
     print(response)
@@ -307,38 +318,37 @@ async def update_stats_time_spent(
 # ----- profile endpoints -----
 
 @app.get("/api/get-profile")
-async def get_profile(user_id: str,
-                      auth: Auth):
-    response = supabase.table("profile").select("*").match(
+async def get_profile(user_id: str, auth: Auth):
+    token, user_supabase = auth
+    response = user_supabase.table("profile").select("*").match(
         {"id": user_id}).execute()
     print(response)
     return response
 
 
 @app.post("/api/create-profile")
-async def create_profile(data:  CreateProfile,
-                         auth: Auth):
-    session = supabase.auth.get_user()
+async def create_profile(data:  CreateProfile, auth: Auth):
+    token, user_supabase = auth
+    session = user_supabase.auth.get_user()
     if not session:
-        return HTTPException(status_code=400, detail="User not found")
+        raise HTTPException(status_code=400, detail="User not found")
     if not session.user.user_metadata["username"]:
-        return HTTPException(status_code=400, detail="User not found")
+        raise HTTPException(status_code=400, detail="User not found")
     username = session.user.user_metadata.get("username")
     if not username:
-        return HTTPException(status_code=400, detail="Username not found")
+        raise HTTPException(status_code=400, detail="Username not found")
     print(username)
     data.username = username
-    response = supabase.table("profile").insert(
+    response = user_supabase.table("profile").insert(
         data.model_dump(mode="json", exclude_none=True)).execute()
     print(response)
     return response
 
 
 @app.put("/api/update-profile")
-async def update_profile(
-    user_id: str, data:  UpdateProfile,
-        auth: Auth):
-    response = supabase.table("profile").update(
+async def update_profile(user_id: str, data:  UpdateProfile, auth: Auth):
+    token, user_supabase = auth
+    response = user_supabase.table("profile").update(
         data.model_dump(mode="json", exclude_none=True)
     ).match({"id": user_id}).execute()
     print(response)
