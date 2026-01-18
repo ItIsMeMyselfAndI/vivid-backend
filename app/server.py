@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Annotated, Optional, Tuple
+from fastapi.responses import JSONResponse
 from openai import OpenAI
 from supabase import create_client, Client
 from fastapi import Depends, FastAPI, HTTPException, Header, Request
@@ -72,7 +73,38 @@ async def validate_token(
 Auth = Annotated[Tuple[str, Client], Depends(validate_token)]
 
 
+# ----- guest -----
+@app.post("/api/auth/guest")
+def set_guest_cookie():
+    res = JSONResponse({"ok": True})
+    res.set_cookie(
+        key="guest",
+        value="true",
+        path="/",
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=60 * 60 * 24,
+    )
+    return res
+
+
+@app.post("/api/auth/guest/clear")
+def clear_guest_cookie():
+    res = JSONResponse({"ok": True})
+    res.set_cookie(
+        key="guest",
+        value="",
+        path="/",
+        max_age=0,      # clears the cookie
+        httponly=True,
+        secure=True,
+        samesite="lax",
+    )
+    return res
+
 # ----- simulation endpoints -----
+
 
 @app.get("/api/get-simulation")
 async def get_simulation(user_id: str,
