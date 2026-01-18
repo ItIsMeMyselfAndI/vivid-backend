@@ -3,10 +3,10 @@ from fastapi import APIRouter
 from app.api.deps import Auth
 from schema.settings import CreateSettings, UpdateSettings
 
-router = APIRouter(prefix="")
+router = APIRouter(prefix="/settings")
 
 
-@router.get("/get-settings")
+@router.get("/{user_id}")
 async def get_settings(user_id: str, auth: Auth):
     token, user_supabase = auth
     response = user_supabase.table("settings").select("*").match(
@@ -15,7 +15,7 @@ async def get_settings(user_id: str, auth: Auth):
     return response
 
 
-@router.post("/create-settings")
+@router.post("")
 async def create_settings(data:  CreateSettings,
                           auth: Auth):
     token, user_supabase = auth
@@ -25,7 +25,7 @@ async def create_settings(data:  CreateSettings,
     return response
 
 
-@router.put("/update-settings")
+@router.put("/{user_id}")
 async def update_settings(user_id: str,
                           data:  UpdateSettings, auth: Auth):
     token, user_supabase = auth

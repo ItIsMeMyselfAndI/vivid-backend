@@ -4,10 +4,10 @@ from app.api.deps import Auth
 from schema.stats import CreateStats, UpdateStats
 from schema.time_spent import TimeSpentPayload
 
-router = APIRouter(prefix="")
+router = APIRouter(prefix="/stats")
 
 
-@router.get("/get-stats")
+@router.get("")
 async def get_stats(user_id: str, auth: Auth):
     token, user_supabase = auth
     response = user_supabase.table("stats").select("*").match(
@@ -16,7 +16,7 @@ async def get_stats(user_id: str, auth: Auth):
     return response
 
 
-@router.post("/create-stats")
+@router.post("")
 async def create_stats(data:  CreateStats, auth: Auth):
     token, user_supabase = auth
     response = user_supabase.table("stats").insert(
@@ -25,7 +25,7 @@ async def create_stats(data:  CreateStats, auth: Auth):
     return response
 
 
-@router.put("/update-stats")
+@router.put("")
 async def update_stats(user_id: str, data:  UpdateStats, auth: Auth):
     token, user_supabase = auth
     response = user_supabase.table("stats").update(
@@ -35,7 +35,7 @@ async def update_stats(user_id: str, data:  UpdateStats, auth: Auth):
     return response
 
 
-@router.post("/update-stats-time-spent")
+@router.post("/time-spent")
 async def update_stats_time_spent(
         user_id: str, payload: TimeSpentPayload, auth: Auth
 ):

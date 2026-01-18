@@ -5,23 +5,13 @@ from app.api.deps import Auth
 from schema.history import CreateHistory, UpdateHistory
 from schema.time_spent import TimeSpentPayload
 
-router = APIRouter(prefix="")
+router = APIRouter(prefix="/history")
 
 
-@router.get("/get-history")
-async def get_history(user_id: str, history_id: int, auth: Auth):
-    token, user_supabase = auth
-    result = user_supabase.table("history").select("*").match(
-        {"user_id": user_id, "id": history_id}
-    ).execute()
-    print(result)
-    return result
-
-
-@router.get("/get-histories-from-bot")
+@router.get("/list")
 async def get_histories_from_bot(user_id: str, limit: int,
-                                 auth: Auth, cursor: Optional[int] = None,
-                                 ):
+                                 auth: Auth,
+                                 cursor: Optional[int] = None):
     token, user_supabase = auth
     if not cursor:
         result = user_supabase.table("history").select("*").match(
@@ -48,7 +38,17 @@ async def get_histories_from_bot(user_id: str, limit: int,
     return response
 
 
-@router.post("/create-history")
+@router.get("/{history_id}")
+async def get_history(user_id: str, history_id: int, auth: Auth):
+    token, user_supabase = auth
+    result = user_supabase.table("history").select("*").match(
+        {"user_id": user_id, "id": history_id}
+    ).execute()
+    print(result)
+    return result
+
+
+@router.post("")
 async def create_history(data:  CreateHistory, auth: Auth):
     token, user_supabase = auth
     response = user_supabase.table("history").insert(
@@ -57,7 +57,7 @@ async def create_history(data:  CreateHistory, auth: Auth):
     return response
 
 
-@router.put("/update-history")
+@router.put("/{history_id}")
 async def update_history(user_id: str, history_id: int,
                          data:  UpdateHistory, auth: Auth):
     token, user_supabase = auth
@@ -68,7 +68,7 @@ async def update_history(user_id: str, history_id: int,
     return response
 
 
-@router.post("/update-history-time-spent")
+@router.post("/{history_id}/time-spent")
 async def update_history_time_spent(user_id: str, history_id: int,
                                     payload: TimeSpentPayload, auth: Auth):
     token, user_supabase = auth

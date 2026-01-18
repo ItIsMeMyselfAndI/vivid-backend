@@ -12,10 +12,10 @@ OPEN_ROUTER_URL = "https://openrouter.ai/api/v1"
 OPEN_ROUTER_API_KEY = os.environ.get("OPEN_ROUTER_API_KEY")
 
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(prefix="/daily-messages")
 
 
-@router.post("/generate-profile-monthly-messages")
+@router.post("")
 async def generate_profile_monthly_messages(auth: Auth):
     prompt = """Generate a short message of the day.
         This will be used in an router called

@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 
 
-from app.api.routers import auth, simulation, stats, profile, history, settings
+from app.api.routers import auth, daily_message, simulation, stats, profile, history, settings
 
 load_dotenv()
 
@@ -29,3 +29,4 @@ app.include_router(stats.router, prefix="/api")
 app.include_router(profile.router, prefix="/api")
 app.include_router(history.router, prefix="/api")
 app.include_router(settings.router, prefix="/api")
+app.include_router(daily_message.router, prefix="/api")

@@ -1,10 +1,10 @@
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(prefix="/auth/guest")
 
 
-@router.post("/guest")
+@router.post("")
 def set_guest_cookie():
     res = JSONResponse({"ok": True})
     res.set_cookie(
@@ -19,7 +19,7 @@ def set_guest_cookie():
     return res
 
 
-@router.post("/guest/clear")
+@router.post("/clear")
 def clear_guest_cookie():
     res = JSONResponse({"ok": True})
     res.set_cookie(

@@ -4,10 +4,10 @@ from app.api.deps import Auth
 from schema.simulation import CreateSimulation, SimulationType, UpdateSimulation
 from schema.time_spent import TimeSpentPayload
 
-router = APIRouter(prefix="")
+router = APIRouter(prefix="/simulation")
 
 
-@router.get("/get-simulation")
+@router.get("")
 async def get_simulation(user_id: str,
                          simulation_type: SimulationType, auth: Auth):
     token, user_supabase = auth
@@ -18,7 +18,7 @@ async def get_simulation(user_id: str,
     return response
 
 
-@router.get("/get-all-simulations")
+@router.get("/list")
 async def get_all_simulations(user_id: str, auth: Auth):
     token, user_supabase = auth
     response = user_supabase.table("simulation").select("*").match(
@@ -28,7 +28,7 @@ async def get_all_simulations(user_id: str, auth: Auth):
     return response
 
 
-@router.post("/create-simulation")
+@router.post("")
 async def create_simulation(data:  CreateSimulation, auth: Auth):
     token, user_supabase = auth
     response = user_supabase.table("simulation").insert(
@@ -37,7 +37,7 @@ async def create_simulation(data:  CreateSimulation, auth: Auth):
     return response
 
 
-@router.put("/update-simulation")
+@router.put("")
 async def update_simulation(
         user_id: str, simulation_type: SimulationType,
         data:  UpdateSimulation, auth: Auth
@@ -50,7 +50,7 @@ async def update_simulation(
     return response
 
 
-@router.post("/update-simulation-time-spent")
+@router.post("/time-spent")
 async def update_simulation_time_spent(
         user_id: str, simulation_type: SimulationType,
         payload: TimeSpentPayload, auth: Auth
