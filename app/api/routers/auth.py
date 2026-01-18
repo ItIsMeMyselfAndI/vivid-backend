@@ -13,7 +13,7 @@ def set_guest_cookie():
         path="/",
         httponly=True,
         secure=True,
-        samesite="lax",
+        samesite="none",
         max_age=60 * 60 * 24,
     )
     return res
@@ -29,6 +29,6 @@ def clear_guest_cookie():
         max_age=0,      # clears the cookie
         httponly=True,
         secure=True,
-        samesite="lax",
+        samesite="none",
     )
     return res
