@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 
 
-from app.api.routers import auth, daily_message, simulation, stats, profile, history, settings
+from app.api.routers import daily_message, simulation, stats, profile, history, settings
 
 load_dotenv()
 
@@ -23,7 +23,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="/api")
 app.include_router(simulation.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
 app.include_router(profile.router, prefix="/api")
