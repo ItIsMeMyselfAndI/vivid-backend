@@ -180,11 +180,11 @@ async def update_simulation_time_spent(
 @app.get("/api/get-history")
 async def get_history(user_id: str, history_id: int, auth: Auth):
     token, user_supabase = auth
-    response = user_supabase.table("history").select("*").match(
+    result = user_supabase.table("history").select("*").match(
         {"user_id": user_id, "id": history_id}
     ).execute()
-    print(response)
-    return response
+    print(result)
+    return result
 
 
 @app.get("/api/get-histories-from-bot")
