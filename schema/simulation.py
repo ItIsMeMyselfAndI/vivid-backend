@@ -15,7 +15,9 @@ class SimulationType(Enum):
     QUEUE = "queue"
     BINARY_TREE = "binary-tree"
     BINARY_SEARCH_TREE = "binary-search-tree"
-    RECURSION = "recursion"
+    HANOI_TOWER = "hanoi-tower"
+    FACTORIAL = "factorial"
+    FIBONACCI = "fibonacci"
 
 
 class Simulation(BaseModel):
